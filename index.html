@@ -4,6 +4,8 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#fff">
+<link rel="manifest" href="./manifest.json">
+<link rel="apple-touch-icon" href="./icon.svg">
 <title>LINE 友達追加</title>
 <style>
 html,body{margin:0;width:100%;height:100%;background:#fff}
@@ -30,6 +32,7 @@ choose.onclick=()=>file.click();
 photo.onclick=()=>file.click();
 file.onchange=async()=>{const f=file.files[0];if(!f)return;try{await saveImage(f);show(f)}catch(e){alert('画像を保存できませんでした。端末の空き容量を確認してください。')}};
 getImage().then(saved=>{if(saved)show(saved)}).catch(()=>{});
+if('serviceWorker' in navigator){navigator.serviceWorker.register('./sw.js').catch(()=>{})}
 </script>
 </body>
 </html>
