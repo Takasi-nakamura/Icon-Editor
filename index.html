@@ -12,31 +12,26 @@ body{display:flex;align-items:center;justify-content:center;overflow:hidden}
 #setup{font-family:system-ui,sans-serif;text-align:center;padding:24px}
 #setup h1{font-size:24px;margin:0 0 12px}
 #setup p{color:#666}
-button{border:0;border-radius:14px;background:#111;color:#fff;font-size:18px;font-weight:700;padding:16px 28px}
+button{border:0;border-radius:14px;background:#111;color:#fff;font-size:18px;font-weight:700;padding:16px 28px;margin:6px}
+#reset{display:none;background:#777}
 input{display:none}
 </style>
 </head>
 <body>
 <img id="photo" alt="設定した写真">
-<div id="setup"><h1>LINE 友達追加</h1><p>最初に表示する写真を設定してください。</p><input id="file" type="file" accept="image/*"><button onclick="file.click()">写真を設定</button></div>
+<div id="setup"><h1>LINE 友達追加</h1><p>最初に表示する写真を設定してください。</p><input id="file" type="file" accept="image/*"><button id="choose">写真を設定</button><button id="reset">写真を再設定</button></div>
 <script>
-const KEY='line-friend-photo-v2',photo=document.getElementById('photo'),setup=document.getElementById('setup'),file=document.getElementById('file');
-function show(src){photo.src=src;photo.style.display='block';setup.style.display='none'}
-const saved=localStorage.getItem(KEY);if(saved)show(saved);
-file.onchange=()=>{
-  const f=file.files[0];
-  if(!f)return;
-  const r=new FileReader();
-  r.onload=()=>{
-    try{
-      localStorage.setItem(KEY,r.result);
-      show(r.result);
-    }catch(e){
-      alert('この画像は保存容量を超えています。別の画像を選んでください。');
-    }
-  };
-  r.readAsDataURL(f);
-};
+const DB='line-friend-photo-db',STORE='images',KEY='selected',photo=document.getElementById('photo'),setup=document.getElementById('setup'),file=document.getElementById('file'),choose=document.getElementById('choose'),reset=document.getElementById('reset');
+let objectUrl='';
+function openDB(){return new Promise((resolve,reject)=>{const r=indexedDB.open(DB,1);r.onupgradeneeded=()=>r.result.createObjectStore(STORE);r.onsuccess=()=>resolve(r.result);r.onerror=()=>reject(r.error)})}
+async function getImage(){const db=await openDB();return new Promise((resolve,reject)=>{const r=db.transaction(STORE,'readonly').objectStore(STORE).get(KEY);r.onsuccess=()=>resolve(r.result||null);r.onerror=()=>reject(r.error)})}
+async function saveImage(blob){const db=await openDB();return new Promise((resolve,reject)=>{const r=db.transaction(STORE,'readwrite').objectStore(STORE).put(blob,KEY);r.onsuccess=resolve;r.onerror=()=>reject(r.error)})}
+async function deleteImage(){const db=await openDB();return new Promise((resolve,reject)=>{const r=db.transaction(STORE,'readwrite').objectStore(STORE).delete(KEY);r.onsuccess=resolve;r.onerror=()=>reject(r.error)})}
+function show(blob){if(objectUrl)URL.revokeObjectURL(objectUrl);objectUrl=URL.createObjectURL(blob);photo.src=objectUrl;photo.style.display='block';setup.style.display='block';choose.style.display='none';reset.style.display='inline-block'}
+async function load(){const saved=await getImage();if(saved)show(saved)}
+choose.onclick=()=>file.click();reset.onclick=()=>file.click();
+file.onchange=async()=>{const f=file.files[0];if(!f)return;try{await saveImage(f);show(f)}catch(e){alert('画像を保存できませんでした。端末の空き容量を確認してください。')}};
+load().catch(()=>{});
 </script>
 </body>
 </html>
