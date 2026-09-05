@@ -1,0 +1,10 @@
+{
+  "name": "LINE 友達追加",
+  "short_name": "LINE 友達追加",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#ffffff",
+  "description": "設定した画像を表示するシンプルなPWA"
+}
