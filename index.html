@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#111827">
+<meta name="description" content="PWAのアイコン画像を設定できるIcon Editor">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icon.svg">
+<title>Icon Editor</title>
+<style>
+:root{font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:#111827;background:#f3f4f6}*{box-sizing:border-box}body{margin:0;min-height:100vh;display:grid;place-items:center;padding:20px}main{width:min(100%,480px);background:#fff;border-radius:28px;padding:28px;box-shadow:0 18px 50px #0000001a}h1{margin:0 0 8px;font-size:28px}p{color:#6b7280;line-height:1.6}.preview{width:180px;height:180px;margin:28px auto;border-radius:38px;overflow:hidden;background:#e5e7eb;display:grid;place-items:center;box-shadow:0 12px 30px #0000001f}.preview img{width:100%;height:100%;object-fit:cover;display:block}.placeholder{color:#9ca3af;font-size:56px}.button{width:100%;border:0;border-radius:16px;padding:15px 18px;font-size:16px;font-weight:700;background:#111827;color:#fff;cursor:pointer}.button:active{transform:scale(.99)}.secondary{margin-top:10px;background:#eef0f3;color:#111827}input{display:none}.status{min-height:24px;margin-top:14px;text-align:center;font-size:14px;color:#6b7280}.note{font-size:12px;margin-top:22px;text-align:center;color:#9ca3af}
+</style>
+</head>
+<body>
+<main>
+<h1>Icon Editor</h1>
+<p>ギャラリーから画像を1枚選ぶと、このPWAで使うアイコンとして設定できます。</p>
+<div class="preview" aria-label="アイコンプレビュー"><img id="preview" alt="選択したアイコン" hidden><div id="placeholder" class="placeholder">＋</div></div>
+<input id="file" type="file" accept="image/*">
+<button id="choose" class="button">画像を選ぶ</button>
+<button id="reset" class="button secondary" type="button">初期アイコンに戻す</button>
+<div id="status" class="status" role="status"></div>
+<div class="note">選択した画像はこの端末のlocalStorageに保存されます。</div>
+</main>
+<script>
+const KEY='icon-editor-image';
+const fileInput=document.getElementById('file'),preview=document.getElementById('preview'),placeholder=document.getElementById('placeholder'),status=document.getElementById('status');
+const favicon=document.querySelector('link[rel="icon"]'),appleIcon=document.querySelector('link[rel="apple-touch-icon"]');
+function setIcon(data){if(data){preview.src=data;preview.hidden=false;placeholder.hidden=true;favicon.href=data;appleIcon.href=data}else{preview.hidden=true;preview.removeAttribute('src');placeholder.hidden=false;favicon.href='icon.svg';appleIcon.href='icon.svg'}}
+try{const saved=localStorage.getItem(KEY);if(saved)setIcon(saved)}catch(e){status.textContent='保存データを読み込めませんでした。'}
+fileInput.addEventListener('change',()=>{const file=fileInput.files?.[0];if(!file||!file.type.startsWith('image/'))return;const reader=new FileReader();reader.onload=()=>{try{localStorage.setItem(KEY,reader.result);setIcon(reader.result);status.textContent='アイコンを設定しました。'}catch(e){status.textContent='画像が大きすぎて保存できませんでした。'}};reader.readAsDataURL(file)});
+document.getElementById('choose').addEventListener('click',()=>fileInput.click());
+document.getElementById('reset').addEventListener('click',()=>{localStorage.removeItem(KEY);setIcon(null);status.textContent='初期アイコンに戻しました。'});
+if('serviceWorker'in navigator)navigator.serviceWorker.register('sw.js').catch(()=>{});
+</script>
+</body>
+</html>
