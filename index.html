@@ -3,42 +3,42 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#111827">
-<meta name="description" content="好きな画像を選んでホーム画面に追加するIcon Editor">
+<meta name="theme-color" content="#ffffff">
+<meta name="description" content="写真を大きく表示できるLINE 友達追加用アプリ">
 <link id="manifest" rel="manifest" href="manifest.json">
 <link id="favicon" rel="icon" href="icon.svg" type="image/svg+xml">
-<title>Icon Editor</title>
+<title>LINE 友達追加</title>
 <style>
-:root{font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:#111827;background:#f3f4f6}*{box-sizing:border-box}body{margin:0;min-height:100vh;display:grid;place-items:center;padding:18px}main{width:min(100%,480px);background:#fff;border-radius:28px;padding:28px;box-shadow:0 18px 50px #0000001a}h1{margin:0 0 8px;font-size:28px}p{color:#6b7280;line-height:1.6}.preview{width:180px;height:180px;margin:28px auto;border-radius:38px;overflow:hidden;background:#e5e7eb;display:grid;place-items:center;box-shadow:0 12px 30px #0000001f}.preview img{width:100%;height:100%;object-fit:cover;display:block}.placeholder{color:#9ca3af;font-size:56px}.button{width:100%;border:0;border-radius:16px;padding:15px 18px;font-size:16px;font-weight:700;background:#111827;color:#fff;cursor:pointer}.button:active{transform:scale(.99)}.secondary{margin-top:10px;background:#eef0f3;color:#111827}input{display:none}.status{min-height:24px;margin-top:14px;text-align:center;font-size:14px;color:#6b7280}.steps{margin:20px 0;padding:16px 18px;background:#f8fafc;border-radius:18px;font-size:14px;line-height:1.8}.install{display:none;margin-top:10px;background:#2563eb}.install.show{display:block}.note{font-size:12px;margin-top:22px;text-align:center;color:#9ca3af}
+*{box-sizing:border-box}body{margin:0;min-height:100vh;background:#fff;font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:#111827}main{min-height:100vh;display:flex;flex-direction:column;padding:18px 16px 28px}header{display:flex;align-items:center;justify-content:space-between;padding:6px 2px 16px}h1{font-size:24px;margin:0;font-weight:800}.add{border:0;border-radius:14px;background:#111827;color:#fff;padding:11px 15px;font-weight:700;font-size:14px}.photo{flex:1;min-height:58vh;border-radius:24px;background:#f3f4f6;overflow:hidden;display:flex;align-items:center;justify-content:center;position:relative;cursor:pointer}.photo img{width:100%;height:100%;object-fit:contain;display:block}.empty{text-align:center;color:#6b7280;padding:30px}.empty strong{display:block;font-size:22px;color:#111827;margin-bottom:8px}.empty span{font-size:15px}input{display:none}.hint{text-align:center;color:#6b7280;font-size:13px;padding:16px 4px}.actions{display:grid;gap:10px}.button{width:100%;border:0;border-radius:16px;padding:16px;font-size:17px;font-weight:800;background:#111827;color:#fff}.secondary{background:#f0f1f3;color:#111827}.install{display:none;background:#2563eb}.install.show{display:block}.status{text-align:center;min-height:22px;color:#6b7280;font-size:13px;margin-top:10px}.fullscreen{position:fixed;inset:0;background:#000;z-index:20;display:none;align-items:center;justify-content:center}.fullscreen.show{display:flex}.fullscreen img{width:100%;height:100%;object-fit:contain}.close{position:absolute;top:18px;right:18px;width:46px;height:46px;border:0;border-radius:50%;background:#fff;color:#111;font-size:25px;font-weight:700;z-index:21}
 </style>
 </head>
 <body>
 <main>
-<h1>Icon Editor</h1>
-<p>先に好きな画像を選んでから、ホーム画面に追加できます。</p>
-<div class="preview" aria-label="アイコンプレビュー"><img id="preview" alt="選択したアイコン" hidden><div id="placeholder" class="placeholder">＋</div></div>
-<input id="file" type="file" accept="image/*">
-<button id="choose" class="button">① 画像を選ぶ</button>
-<button id="install" class="button install">② ホーム画面に追加</button>
-<button id="reset" class="button secondary" type="button">初期画像に戻す</button>
+<header><h1>LINE 友達追加</h1><button class="add" id="topChoose">写真を追加</button></header>
+<div class="photo" id="photo" aria-label="写真表示エリア">
+<img id="preview" alt="追加した写真" hidden>
+<div id="empty" class="empty"><strong>写真を追加</strong><span>ここに大きく表示できます</span></div>
+</div>
+<div class="hint">写真をタップすると全画面で表示します</div>
+<div class="actions"><input id="file" type="file" accept="image/*"><button class="button" id="choose">写真を追加する</button><button class="button install" id="install">ホーム画面に追加</button><button class="button secondary" id="reset">写真を削除</button></div>
 <div id="status" class="status" role="status"></div>
-<div class="steps">画像を選択 → 「ホーム画面に追加」→ ブラウザの案内に従って追加、という流れです。</div>
-<div class="note">選択画像は端末内のlocalStorageに保存されます。</div>
 </main>
+<div class="fullscreen" id="fullscreen"><button class="close" id="close">×</button><img id="fullImage" alt="写真を全画面表示"></div>
 <script>
-const KEY='icon-editor-image';
-const fileInput=document.getElementById('file'),preview=document.getElementById('preview'),placeholder=document.getElementById('placeholder'),status=document.getElementById('status'),installButton=document.getElementById('install'),manifestLink=document.getElementById('manifest'),favicon=document.getElementById('favicon');
+const KEY='line-friend-add-photo';
+const file=document.getElementById('file'),preview=document.getElementById('preview'),empty=document.getElementById('empty'),status=document.getElementById('status'),install=document.getElementById('install'),manifest=document.getElementById('manifest');
 let deferredPrompt=null;
-function setIcon(data){if(data){preview.src=data;preview.hidden=false;placeholder.hidden=true;favicon.href=data;installButton.classList.add('show');buildManifest(data)}else{preview.hidden=true;preview.removeAttribute('src');placeholder.hidden=false;favicon.href='icon.svg';installButton.classList.remove('show');manifestLink.href='manifest.json'}}
-function buildManifest(data){const manifest={name:'Icon Editor',short_name:'Icon Editor',description:'好きな画像をアイコンにしてホーム画面に追加できます',start_url:'./',scope:'./',display:'standalone',background_color:'#f3f4f6',theme_color:'#111827',icons:[{src:data,sizes:'512x512',type:'image/png',purpose:'any maskable'}]};const blob=new Blob([JSON.stringify(manifest)],{type:'application/manifest+json'});const url=URL.createObjectURL(blob);const old=manifestLink.dataset.blob;if(old)URL.revokeObjectURL(old);manifestLink.href=url;manifestLink.dataset.blob=url}
-function saveImage(data){try{localStorage.setItem(KEY,data);return true}catch(e){return false}}
-try{const saved=localStorage.getItem(KEY);if(saved)setIcon(saved)}catch(e){status.textContent='保存データを読み込めませんでした。'}
-fileInput.addEventListener('change',()=>{const file=fileInput.files?.[0];if(!file||!file.type.startsWith('image/'))return;const reader=new FileReader();reader.onload=()=>{if(saveImage(reader.result)){setIcon(reader.result);status.textContent='画像を設定しました。「ホーム画面に追加」を押してください。'}else status.textContent='画像が大きすぎて保存できませんでした。'};reader.readAsDataURL(file)});
-document.getElementById('choose').addEventListener('click',()=>fileInput.click());
-document.getElementById('reset').addEventListener('click',()=>{localStorage.removeItem(KEY);setIcon(null);status.textContent='初期画像に戻しました。'});
-window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();deferredPrompt=e;installButton.classList.add('show')});
-installButton.addEventListener('click',async()=>{if(deferredPrompt){deferredPrompt.prompt();await deferredPrompt.userChoice;deferredPrompt=null}else{status.textContent='ブラウザのメニューから「ホーム画面に追加」を選んでください。'}});
-window.addEventListener('appinstalled',()=>{status.textContent='ホーム画面への追加が完了しました。'});
+function setPhoto(data){if(data){preview.src=data;preview.hidden=false;empty.hidden=true;install.classList.add('show');buildManifest(data)}else{preview.hidden=true;preview.removeAttribute('src');empty.hidden=false;install.classList.remove('show');manifest.href='manifest.json'}}
+function buildManifest(data){const m={name:'LINE 友達追加',short_name:'LINE 友達追加',description:'写真を大きく表示するアプリ',start_url:'./',scope:'./',display:'standalone',background_color:'#ffffff',theme_color:'#ffffff',icons:[{src:data,sizes:'512x512',type:'image/png',purpose:'any maskable'}]};const u=URL.createObjectURL(new Blob([JSON.stringify(m)],{type:'application/manifest+json'}));const old=manifest.dataset.blob;if(old)URL.revokeObjectURL(old);manifest.href=u;manifest.dataset.blob=u}
+function choose(){file.click()}
+try{const saved=localStorage.getItem(KEY);if(saved)setPhoto(saved)}catch(e){status.textContent='保存データを読み込めませんでした。'}
+file.addEventListener('change',()=>{const f=file.files?.[0];if(!f||!f.type.startsWith('image/'))return;const r=new FileReader();r.onload=()=>{try{localStorage.setItem(KEY,r.result);setPhoto(r.result);status.textContent='写真を追加しました。'}catch(e){status.textContent='写真が大きすぎて保存できませんでした。'}};r.readAsDataURL(f)});
+document.getElementById('choose').onclick=choose;document.getElementById('topChoose').onclick=choose;
+document.getElementById('reset').onclick=()=>{localStorage.removeItem(KEY);setPhoto(null);status.textContent='写真を削除しました。'};
+document.getElementById('photo').onclick=()=>{if(!preview.hidden){document.getElementById('fullImage').src=preview.src;document.getElementById('fullscreen').classList.add('show')}};
+document.getElementById('close').onclick=()=>document.getElementById('fullscreen').classList.remove('show');
+window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();deferredPrompt=e;install.classList.add('show')});
+install.onclick=async()=>{if(deferredPrompt){deferredPrompt.prompt();await deferredPrompt.userChoice;deferredPrompt=null}else status.textContent='ブラウザのメニューから「ホーム画面に追加」を選んでください。'};
 if('serviceWorker'in navigator)navigator.serviceWorker.register('sw.js').catch(()=>{});
 </script>
 </body>
